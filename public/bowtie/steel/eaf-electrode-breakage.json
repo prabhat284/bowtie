@@ -1,0 +1,40 @@
+{
+  "name": "Electric Arc Furnace Electrode Breakage",
+  "hazardEvent": "Arc flash or electrode collapse during melting",
+  "riskLevel": "medium",
+  "department": "EAF Unit",
+  "owner": "Electrical Safety Engineer",
+  "reviewDate": "2025-10-31",
+  "status": "active",
+  "threats": [
+    {
+      "id": 1,
+      "threat": "Overcurrent causing electrode fracture",
+      "likelihood": "medium",
+      "barriers": [
+        "Current limiting system with feedback loop",
+        "Arc length automatic control"
+      ],
+      "escalationFactors": [
+        "Improper scrap charging",
+        "Faulty control relay"
+      ]
+    }
+  ],
+  "consequences": [
+    {
+      "id": 1,
+      "consequence": "Arc flash leading to burns",
+      "severity": "medium",
+      "barriers": [
+        "Remote operation console",
+        "Arc shield curtains"
+      ],
+      "escalationFactors": [
+        "Poor cabin sealing",
+        "Improper PPE compliance"
+      ]
+    }
+  ]
+}
+

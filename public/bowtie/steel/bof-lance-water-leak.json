@@ -1,0 +1,40 @@
+{
+  "name": "BOF Lance Water Leak",
+  "hazardEvent": "Water leakage from oxygen lance into molten metal bath",
+  "riskLevel": "high",
+  "department": "Converter Shop",
+  "owner": "Process Safety Engineer",
+  "reviewDate": "2025-12-31",
+  "status": "active",
+  "threats": [
+    {
+      "id": 1,
+      "threat": "Cooling jacket rupture",
+      "likelihood": "medium",
+      "barriers": [
+        "Pressure differential alarm",
+        "Flow switch interlock to lift lance"
+      ],
+      "escalationFactors": [
+        "Poor water quality causing scaling",
+        "Inadequate flow monitoring"
+      ]
+    }
+  ],
+  "consequences": [
+    {
+      "id": 1,
+      "consequence": "Steam explosion inside converter",
+      "severity": "high",
+      "barriers": [
+        "Automatic lance lift mechanism",
+        "Blast-proof operator control cabin"
+      ],
+      "escalationFactors": [
+        "Alarm ignored",
+        "Maintenance delay"
+      ]
+    }
+  ]
+}
+

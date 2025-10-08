@@ -1,0 +1,53 @@
+{
+  "name": "Hydrogen Explosion in Coke Oven Gas Holder",
+  "hazardEvent": "Ignition of hydrogen-rich gas mixture in gas holder",
+  "riskLevel": "high",
+  "department": "By-Product Plant",
+  "owner": "Gas Holder Area Safety Lead",
+  "reviewDate": "2025-11-30",
+  "status": "active",
+  "threats": [
+    {
+      "id": 1,
+      "threat": "Vent valve failure leading to overpressure",
+      "likelihood": "medium",
+      "barriers": [
+        "Dual vent valves and relief systems",
+        "Nitrogen blanketing to maintain inert condition"
+      ],
+      "escalationFactors": [
+        "Dust fouling vent mechanism",
+        "Valve actuator air leak"
+      ]
+    },
+    {
+      "id": 2,
+      "threat": "Air ingress during maintenance",
+      "likelihood": "high",
+      "barriers": [
+        "Positive pressure monitoring system",
+        "Strict gas-freeing permit process"
+      ],
+      "escalationFactors": [
+        "Improper isolation procedure",
+        "Untrained contractor staff"
+      ]
+    }
+  ],
+  "consequences": [
+    {
+      "id": 1,
+      "consequence": "Explosion or fire inside gas holder",
+      "severity": "high",
+      "barriers": [
+        "Flame arrestor and water seal trap",
+        "Remote emergency shutdown"
+      ],
+      "escalationFactors": [
+        "Delayed ESD activation",
+        "Flame arrestor not tested"
+      ]
+    }
+  ]
+}
+

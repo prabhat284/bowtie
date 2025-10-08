@@ -1,0 +1,53 @@
+{
+  "name": "Blast Furnace Gas Explosion",
+  "hazardEvent": "Uncontrolled release and ignition of blast furnace gas",
+  "riskLevel": "medium",
+  "department": "Ironmaking",
+  "owner": "Safety Officer - BF Unit",
+  "reviewDate": "2025-12-31",
+  "status": "active",
+  "threats": [
+    {
+      "id": 1,
+      "threat": "Corrosion-induced leak in gas pipeline",
+      "likelihood": "medium",
+      "barriers": [
+        "Online leak detection and pressure monitoring",
+        "Ultrasonic thickness testing during maintenance"
+      ],
+      "escalationFactors": [
+        "Deferred maintenance",
+        "Sensor calibration overdue"
+      ]
+    },
+    {
+      "id": 2,
+      "threat": "Improper purging during maintenance",
+      "likelihood": "high",
+      "barriers": [
+        "Permit-to-work with pre-purge checklist",
+        "Isolation valve lockout-tagout"
+      ],
+      "escalationFactors": [
+        "Time pressure on maintenance team",
+        "Incomplete SOP communication"
+      ]
+    }
+  ],
+  "consequences": [
+    {
+      "id": 1,
+      "consequence": "Explosion causing injury and damage",
+      "severity": "high",
+      "barriers": [
+        "Automatic isolation and venting system",
+        "Gas detector alarms with ESD linkage"
+      ],
+      "escalationFactors": [
+        "Blocked vent lines",
+        "Alarm ignored by operator"
+      ]
+    }
+  ]
+}
+

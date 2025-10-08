@@ -1,0 +1,66 @@
+{
+  "name": "Molten Metal Spill During Ladle Transport",
+  "hazardEvent": "Spillage of molten steel during crane movement",
+  "riskLevel": "high",
+  "department": "Steelmaking",
+  "owner": "SMS Safety Incharge",
+  "reviewDate": "2025-12-31",
+  "status": "active",
+  "threats": [
+    {
+      "id": 1,
+      "threat": "Crane brake failure or overspeed",
+      "likelihood": "medium",
+      "barriers": [
+        "Dual braking system with mechanical backup",
+        "Pre-lift inspection and interlock test"
+      ],
+      "escalationFactors": [
+        "Oil contamination on brake pads",
+        "Skipped preventive checks"
+      ]
+    },
+    {
+      "id": 2,
+      "threat": "Overfilled ladle or improper balance",
+      "likelihood": "high",
+      "barriers": [
+        "Level sensor interlock",
+        "Operator checklist with supervisor sign-off"
+      ],
+      "escalationFactors": [
+        "Sensor malfunction",
+        "Inexperienced operator"
+      ]
+    }
+  ],
+  "consequences": [
+    {
+      "id": 1,
+      "consequence": "Severe burns or fatalities",
+      "severity": "high",
+      "barriers": [
+        "Personnel exclusion zone",
+        "Heat-resistant PPE and face shields"
+      ],
+      "escalationFactors": [
+        "Poor visibility or lighting",
+        "Inadequate PPE training"
+      ]
+    },
+    {
+      "id": 2,
+      "consequence": "Equipment damage and fire",
+      "severity": "medium",
+      "barriers": [
+        "Fireproof flooring and trench design",
+        "Automatic fire suppression nozzles"
+      ],
+      "escalationFactors": [
+        "Delayed firefighting response",
+        "Blocked emergency exit"
+      ]
+    }
+  ]
+}
+
