@@ -1,6 +1,7 @@
 //cat > src/components/BarrierPanel.jsx <<'EOF'
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Upload, FileText, Image, Trash2, Calendar, AlertCircle, CheckCircle, Camera, File, Eye, Download, ExternalLink } from 'lucide-react';
+import { calculateBarrierEffectiveness } from '../utils';
 
 export default function BarrierPanel({ barrier, onUpdate, onClose }) {
   const evidenceInputRef = useRef(null);
@@ -12,6 +13,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     description: barrier.description || '',
     owner: barrier.owner || '',
     effectiveness: barrier.effectiveness || 'good',
+    category: barrier.category || 'hardware',
     inherentRisk: barrier.inherentRisk || 'medium',
     residualRisk: barrier.residualRisk || 'low',
     lastTestDate: barrier.lastTestDate || '',
@@ -23,11 +25,19 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     attachments: barrier.attachments || []
   });
 
+  // Auto-calculate effectiveness whenever relevant fields change
+  useEffect(() => {
+    const autoEffectiveness = calculateBarrierEffectiveness(formData);
+    if (autoEffectiveness !== formData.effectiveness) {
+      setFormData(prev => ({ ...prev, effectiveness: autoEffectiveness }));
+    }
+  }, [formData.findingsOpen, formData.lastTestDate, formData.nextDue, formData.owner]);
+
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  // Generate file name with proper convention
+  // ... (keep all the existing file upload handlers from previous version)
   const generateFileName = (originalName, type) => {
     const timestamp = new Date().toISOString().split('T')[0];
     const barrierShort = formData.description
@@ -53,7 +63,6 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     return `${prefix}-${barrierShort}-${timestamp}.${extension}`;
   };
 
-  // Handle evidence file selection
   const handleEvidenceUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -110,7 +119,6 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     e.target.value = '';
   };
 
-  // Handle image upload
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -164,7 +172,6 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     e.target.value = '';
   };
 
-  // Handle document upload
   const handleDocumentUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -216,12 +223,6 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     }
   };
 
-  // Preview file (for images and PDFs)
-  const handlePreviewFile = (file) => {
-    setPreviewFile(file);
-  };
-
-  // Download file
   const handleDownloadFile = (file) => {
     const fileName = typeof file === 'string' ? file : file.name;
     const fileData = file.data;
@@ -231,7 +232,6 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
       return;
     }
 
-    // Create download link
     const link = document.createElement('a');
     link.href = fileData;
     link.download = fileName;
@@ -240,7 +240,6 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     document.body.removeChild(link);
   };
 
-  // Open file in new tab
   const handleOpenFile = (file) => {
     const fileData = file.data;
     
@@ -339,14 +338,35 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex items-center justify-between rounded-t-xl z-10">
-          <h2 className="text-2xl font-bold">Configure Barrier</h2>
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 sm:p-6 flex items-center justify-between rounded-t-xl z-10">
+          <h2 className="text-xl sm:text-2xl font-bold">Configure Barrier</h2>
           <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-all">
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Auto-Effectiveness Score Banner */}
+          <div className={`p-4 rounded-lg border-2 ${
+            formData.effectiveness === 'good' ? 'bg-green-50 border-green-300' :
+            formData.effectiveness === 'weak' ? 'bg-yellow-50 border-yellow-300' :
+            'bg-red-50 border-red-300'
+          }`}>
+            <div className="flex items-center gap-3">
+              {getEffectivenessIcon(formData.effectiveness)}
+              <div>
+                <h3 className="font-bold text-sm">
+                  Auto-Calculated Effectiveness: {formData.effectiveness.toUpperCase()}
+                </h3>
+                <p className="text-xs mt-1">
+                  {formData.effectiveness === 'good' && 'Barrier is well-maintained and effective'}
+                  {formData.effectiveness === 'weak' && 'Barrier needs attention - test overdue or findings open'}
+                  {formData.effectiveness === 'failed' && 'Critical: Barrier has significant issues'}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Description */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -361,8 +381,8 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
             />
           </div>
 
-          {/* Owner and Effectiveness */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Owner and Category */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Barrier Owner
@@ -378,22 +398,22 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                Effectiveness {getEffectivenessIcon(formData.effectiveness)}
+                Barrier Type/Category
               </label>
               <select
-                value={formData.effectiveness}
-                onChange={(e) => handleChange('effectiveness', e.target.value)}
+                value={formData.category}
+                onChange={(e) => handleChange('category', e.target.value)}
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
-                <option value="good">Good - Fully Functional</option>
-                <option value="weak">Weak - Degraded Performance</option>
-                <option value="failed">Failed - Non-Functional</option>
+                <option value="hardware">🔧 Hardware - Physical Equipment</option>
+                <option value="procedure">📋 Procedure - Written Process/SOP</option>
+                <option value="people">👤 People - Training/Competence</option>
               </select>
             </div>
           </div>
 
           {/* Risk Levels */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Inherent Risk (Without Barrier)
@@ -426,7 +446,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
           </div>
 
           {/* Testing Schedule */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Test Frequency
@@ -482,6 +502,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
               onChange={(e) => handleChange('findingsOpen', parseInt(e.target.value) || 0)}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
+            <p className="text-xs text-slate-500 mt-1">Each open finding reduces barrier effectiveness</p>
           </div>
 
           {/* Evidence Files */}
@@ -497,10 +518,10 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
               </div>
               <button
                 onClick={() => evidenceInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
               >
                 <Upload className="w-4 h-4" />
-                Upload Evidence
+                <span className="hidden sm:inline">Upload Evidence</span>
               </button>
               <input
                 ref={evidenceInputRef}
@@ -513,8 +534,8 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
             </div>
             
             {formData.evidence.length === 0 ? (
-              <div className="text-center py-8 border-2 border-dashed border-blue-200 rounded-lg">
-                <Upload className="w-12 h-12 text-blue-300 mx-auto mb-2" />
+              <div className="text-center py-6 sm:py-8 border-2 border-dashed border-blue-200 rounded-lg">
+                <Upload className="w-10 h-10 sm:w-12 sm:h-12 text-blue-300 mx-auto mb-2" />
                 <p className="text-sm text-slate-500">No evidence files attached</p>
                 <p className="text-xs text-slate-400 mt-1">Click "Upload Evidence" to add files</p>
               </div>
@@ -524,7 +545,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
                   const fileName = typeof file === 'string' ? file : file.name;
                   return (
                     <div key={index} className="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm border border-blue-200">
-                      <div className="flex items-center gap-3 flex-1">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         {getFileIcon(fileName)}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-slate-700 truncate">{fileName}</p>
@@ -545,10 +566,10 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 ml-2">
+                      <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                         {file.data && (isImage(file) || isPDF(file)) && (
                           <button
-                            onClick={() => handlePreviewFile(file)}
+                            onClick={() => setPreviewFile(file)}
                             className="p-2 hover:bg-blue-100 rounded transition-colors"
                             title="Preview"
                           >
@@ -605,14 +626,14 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
                   className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
                 >
                   <Camera className="w-4 h-4" />
-                  Add Image
+                  <span className="hidden sm:inline">Image</span>
                 </button>
                 <button
                   onClick={() => documentInputRef.current?.click()}
                   className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium"
                 >
                   <FileText className="w-4 h-4" />
-                  Add Doc
+                  <span className="hidden sm:inline">Doc</span>
                 </button>
               </div>
               <input
@@ -634,8 +655,8 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
             </div>
 
             {formData.attachments.length === 0 ? (
-              <div className="text-center py-8 border-2 border-dashed border-green-200 rounded-lg">
-                <Camera className="w-12 h-12 text-green-300 mx-auto mb-2" />
+              <div className="text-center py-6 sm:py-8 border-2 border-dashed border-green-200 rounded-lg">
+                <Camera className="w-10 h-10 sm:w-12 sm:h-12 text-green-300 mx-auto mb-2" />
                 <p className="text-sm text-slate-500">No additional attachments</p>
                 <p className="text-xs text-slate-400 mt-1">Add images or documents</p>
               </div>
@@ -643,7 +664,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
               <div className="space-y-2">
                 {formData.attachments.map((att, index) => (
                   <div key={index} className="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm border border-green-200">
-                    <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       {att.type === 'image' ? (
                         <Image className="w-5 h-5 text-blue-600" />
                       ) : (
@@ -666,10 +687,10 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 ml-2">
+                    <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                       {att.data && (isImage(att) || isPDF(att)) && (
                         <button
-                          onClick={() => handlePreviewFile(att)}
+                          onClick={() => setPreviewFile(att)}
                           className="p-2 hover:bg-blue-100 rounded transition-colors"
                           title="Preview"
                         >
@@ -708,30 +729,6 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
             )}
           </div>
 
-          {/* File Naming Guidelines */}
-          <div className="bg-slate-100 border border-slate-300 rounded-lg p-4">
-            <h4 className="font-semibold text-slate-700 mb-2 text-sm">📋 File Naming Guidelines</h4>
-            <div className="grid grid-cols-2 gap-3 text-xs text-slate-600">
-              <div>
-                <p className="font-medium text-slate-700 mb-1">Evidence Files:</p>
-                <ul className="space-y-1">
-                  <li>• SOP-[system]-[date].pdf</li>
-                  <li>• PID-[area]-[number].pdf</li>
-                  <li>• TEST-[equipment]-[date].pdf</li>
-                  <li>• CERT-[type]-[date].pdf</li>
-                </ul>
-              </div>
-              <div>
-                <p className="font-medium text-slate-700 mb-1">Attachments:</p>
-                <ul className="space-y-1">
-                  <li>• PHOTO-[location]-[date].jpg</li>
-                  <li>• DIAGRAM-[system].png</li>
-                  <li>• CHECKLIST-[type]-[date].pdf</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
           {/* Notes */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -748,16 +745,16 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-slate-50 p-6 flex items-center justify-end gap-3 rounded-b-xl border-t">
+        <div className="sticky bottom-0 bg-slate-50 p-4 sm:p-6 flex items-center justify-end gap-3 rounded-b-xl border-t">
           <button
             onClick={onClose}
-            className="px-6 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 font-medium"
+            className="px-4 sm:px-6 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
           >
             Save Barrier
           </button>
@@ -835,4 +832,4 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     </div>
   );
 }
-//EOF
+

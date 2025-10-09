@@ -1,11 +1,14 @@
 //cat > src/App.jsx <<'EOF'
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, AlertTriangle, ChevronRight, X, Calendar, FileUp } from 'lucide-react';
+import { Plus, Trash2, AlertTriangle, ChevronRight, X, Calendar, FileUp, BookOpen } from 'lucide-react';
 import LoginPage from './Login';
 import RiskMatrix from './components/RiskMatrix';
 import BarrierPanel from './components/BarrierPanel';
 import BowTieVisual from './components/BowTieVisual';
 import Toolbar from './components/Toolbar';
+import KPIDashboard from './components/KPIDashboard';
+import BarrierLibrary from './components/BarrierLibrary';
+import EscalationFactors from './components/EscalationFactors';
 import { createProject, createThreat, createConsequence, createBarrier, getEffectivenessColor, getInitials, migrateProject } from './utils';
 
 const STORAGE_KEY = 'bowtie_projects';
@@ -13,6 +16,8 @@ const STORAGE_KEY = 'bowtie_projects';
 // Threat Editor Component
 function ThreatEditor({ project, onUpdate }) {
   const [selectedBarrier, setSelectedBarrier] = useState(null);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [currentThreatId, setCurrentThreatId] = useState(null);
 
   const addThreat = () => {
     onUpdate({ ...project, threats: [...project.threats, createThreat()] });
@@ -43,14 +48,38 @@ function ThreatEditor({ project, onUpdate }) {
     updateThreat(threatId, { barriers: threat.barriers.filter(b => b.id !== barrierId) });
   };
 
+  const addBarrierFromLibrary = (threatId, libraryBarrier) => {
+    const threat = project.threats.find(t => t.id === threatId);
+    const newBarrier = {
+      ...createBarrier(),
+      description: libraryBarrier.description,
+      category: libraryBarrier.category,
+      notes: libraryBarrier.notes || ''
+    };
+    updateThreat(threatId, { barriers: [...threat.barriers, newBarrier] });
+  };
+
+  const updateEscalationFactors = (threatId, factors) => {
+    updateThreat(threatId, { escalationFactors: factors });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h3 className="text-lg font-bold text-slate-800">Threats & Preventive Barriers</h3>
-        <button onClick={addThreat} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-          <Plus className="w-4 h-4" />
-          Add Threat
-        </button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button 
+            onClick={() => setShowLibrary(true)} 
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span className="hidden sm:inline">Library</span>
+          </button>
+          <button onClick={addThreat} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            <Plus className="w-4 h-4" />
+            Add Threat
+          </button>
+        </div>
       </div>
 
       {project.threats.length === 0 && (
@@ -90,12 +119,30 @@ function ThreatEditor({ project, onUpdate }) {
             </div>
           </div>
 
-          <div className="sm:ml-14 space-y-3">
+          {/* Escalation Factors */}
+          <EscalationFactors 
+            factors={threat.escalationFactors || []}
+            onChange={(factors) => updateEscalationFactors(threat.id, factors)}
+            type="threat"
+          />
+
+          <div className="sm:ml-14 space-y-3 mt-4">
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-blue-900">Preventive Barriers</p>
-              <button onClick={() => addBarrierToThreat(threat.id)} className="text-sm px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                + Add
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => {
+                    setCurrentThreatId(threat.id);
+                    setShowLibrary(true);
+                  }} 
+                  className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                >
+                  📚
+                </button>
+                <button onClick={() => addBarrierToThreat(threat.id)} className="text-sm px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  + Add
+                </button>
+              </div>
             </div>
 
             {threat.barriers.map((barrier) => (
@@ -157,6 +204,19 @@ function ThreatEditor({ project, onUpdate }) {
           onClose={() => setSelectedBarrier(null)}
         />
       )}
+
+      <BarrierLibrary 
+        isOpen={showLibrary}
+        onClose={() => {
+          setShowLibrary(false);
+          setCurrentThreatId(null);
+        }}
+        onSelectBarrier={(barrier) => {
+          if (currentThreatId) {
+            addBarrierFromLibrary(currentThreatId, barrier);
+          }
+        }}
+      />
     </div>
   );
 }
@@ -164,6 +224,8 @@ function ThreatEditor({ project, onUpdate }) {
 // Consequence Editor Component
 function ConsequenceEditor({ project, onUpdate }) {
   const [selectedBarrier, setSelectedBarrier] = useState(null);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [currentConsId, setCurrentConsId] = useState(null);
 
   const addConsequence = () => {
     onUpdate({ ...project, consequences: [...project.consequences, createConsequence()] });
@@ -194,14 +256,38 @@ function ConsequenceEditor({ project, onUpdate }) {
     updateConsequence(consId, { barriers: cons.barriers.filter(b => b.id !== barrierId) });
   };
 
+  const addBarrierFromLibrary = (consId, libraryBarrier) => {
+    const cons = project.consequences.find(c => c.id === consId);
+    const newBarrier = {
+      ...createBarrier(),
+      description: libraryBarrier.description,
+      category: libraryBarrier.category,
+      notes: libraryBarrier.notes || ''
+    };
+    updateConsequence(consId, { barriers: [...cons.barriers, newBarrier] });
+  };
+
+  const updateEscalationFactors = (consId, factors) => {
+    updateConsequence(consId, { escalationFactors: factors });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h3 className="text-lg font-bold text-slate-800">Consequences & Mitigation Barriers</h3>
-        <button onClick={addConsequence} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
-          <Plus className="w-4 h-4" />
-          Add Consequence
-        </button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button 
+            onClick={() => setShowLibrary(true)} 
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span className="hidden sm:inline">Library</span>
+          </button>
+          <button onClick={addConsequence} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+            <Plus className="w-4 h-4" />
+            Add Consequence
+          </button>
+        </div>
       </div>
 
       {project.consequences.length === 0 && (
@@ -241,12 +327,30 @@ function ConsequenceEditor({ project, onUpdate }) {
             </div>
           </div>
 
-          <div className="sm:ml-14 space-y-3">
+          {/* Escalation Factors */}
+          <EscalationFactors 
+            factors={cons.escalationFactors || []}
+            onChange={(factors) => updateEscalationFactors(cons.id, factors)}
+            type="consequence"
+          />
+
+          <div className="sm:ml-14 space-y-3 mt-4">
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-green-900">Mitigation Barriers</p>
-              <button onClick={() => addBarrierToConsequence(cons.id)} className="text-sm px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                + Add
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => {
+                    setCurrentConsId(cons.id);
+                    setShowLibrary(true);
+                  }} 
+                  className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                >
+                  📚
+                </button>
+                <button onClick={() => addBarrierToConsequence(cons.id)} className="text-sm px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                  + Add
+                </button>
+              </div>
             </div>
 
             {cons.barriers.map((barrier) => (
@@ -308,6 +412,19 @@ function ConsequenceEditor({ project, onUpdate }) {
           onClose={() => setSelectedBarrier(null)}
         />
       )}
+
+      <BarrierLibrary 
+        isOpen={showLibrary}
+        onClose={() => {
+          setShowLibrary(false);
+          setCurrentConsId(null);
+        }}
+        onSelectBarrier={(barrier) => {
+          if (currentConsId) {
+            addBarrierFromLibrary(currentConsId, barrier);
+          }
+        }}
+      />
     </div>
   );
 }
@@ -594,6 +711,10 @@ function Dashboard({ projects, onSelectProject, onNewProject, onLogout, onImport
           </div>
         </div>
       </div>
+
+      {/* KPI Dashboard */}
+      {projects.length > 0 && <KPIDashboard projects={projects} />}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <button
           onClick={onNewProject}

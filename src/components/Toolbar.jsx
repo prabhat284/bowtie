@@ -1,6 +1,7 @@
 //cat > src/components/Toolbar.jsx <<'EOF'
 import React, { useRef } from 'react';
 import { FileDown, FileUp, Printer } from 'lucide-react';
+import PDFExporter from './PDFExporter';
 
 export default function Toolbar({ project, onImport }) {
   const fileInputRef = useRef(null);
@@ -37,7 +38,7 @@ export default function Toolbar({ project, onImport }) {
     URL.revokeObjectURL(url);
   };
 
-  const handleExportPDF = () => {
+  const handlePrint = () => {
     window.print();
   };
 
@@ -69,15 +70,17 @@ export default function Toolbar({ project, onImport }) {
         <span className="hidden sm:inline">Export JSON</span>
       </button>
 
+      <PDFExporter project={project} />
+
       <button
-        onClick={handleExportPDF}
+        onClick={handlePrint}
         className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all text-sm"
-        title="Print/Export PDF"
+        title="Print"
       >
         <Printer className="w-4 h-4" />
-        <span className="hidden sm:inline">Print PDF</span>
+        <span className="hidden sm:inline">Print</span>
       </button>
     </div>
   );
 }
-//EOF
+

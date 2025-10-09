@@ -98,22 +98,37 @@ export default function BowTieVisual({ project }) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
-  const BarrierCard = ({ barrier, type }) => {
-    const hasFiles = (barrier.evidence && barrier.evidence.length > 0) || 
-                     (barrier.attachments && barrier.attachments.length > 0);
-    
-    return (
-      <div className="text-xs flex items-start gap-2 bg-white bg-opacity-60 p-2 rounded-lg">
-        <div className={`w-2 h-2 ${getEffectivenessColor(barrier.effectiveness)} rounded-full mt-1 flex-shrink-0`}></div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
+  // In BowTieVisual.jsx, update the BarrierCard to show category icon
+const BarrierCard = ({ barrier, type }) => {
+  const hasFiles = (barrier.evidence && barrier.evidence.length > 0) || 
+                   (barrier.attachments && barrier.attachments.length > 0);
+  
+  const getCategoryIcon = (category) => {
+    const icons = {
+      hardware: '🔧',
+      procedure: '📋',
+      people: '👤'
+    };
+    return icons[category] || '🛡️';
+  };
+  
+  return (
+    <div className="text-xs flex items-start gap-2 bg-white bg-opacity-60 p-2 rounded-lg">
+      <div className={`w-2 h-2 ${getEffectivenessColor(barrier.effectiveness)} rounded-full mt-1 flex-shrink-0`}></div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1 flex-1">
+            <span className="text-sm">{getCategoryIcon(barrier.category)}</span>
             <span className="font-medium flex-1">{barrier.description || 'Unnamed barrier'}</span>
-            {barrier.owner && (
-              <span className={`text-xs font-semibold ${type === 'threat' ? 'text-blue-600' : 'text-green-600'}`}>
-                {barrier.owner}
-              </span>
-            )}
           </div>
+          {barrier.owner && (
+            <span className={`text-xs font-semibold ${type === 'threat' ? 'text-blue-600' : 'text-green-600'}`}>
+              {barrier.owner}
+            </span>
+          )}
+        </div>
+        
+        {/* Rest of the BarrierCard remains the same... */}
           
           {hasFiles && (
             <div className="mt-2 space-y-1">

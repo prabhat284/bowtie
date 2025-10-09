@@ -1,11 +1,12 @@
 //cat > src/components/BarrierPanel.jsx <<'EOF'
 import React, { useState, useRef } from 'react';
-import { X, Upload, FileText, Image, Trash2, Calendar, AlertCircle, CheckCircle, Camera, File } from 'lucide-react';
+import { X, Upload, FileText, Image, Trash2, Calendar, AlertCircle, CheckCircle, Camera, File, Eye, Download, ExternalLink } from 'lucide-react';
 
 export default function BarrierPanel({ barrier, onUpdate, onClose }) {
   const evidenceInputRef = useRef(null);
   const imageInputRef = useRef(null);
   const documentInputRef = useRef(null);
+  const [previewFile, setPreviewFile] = useState(null);
 
   const [formData, setFormData] = useState({
     description: barrier.description || '',
@@ -60,7 +61,6 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        // Ask user to select type
         const typeChoice = prompt(
           `Select type for "${file.name}":\n\n` +
           '1. SOP (Standard Operating Procedure)\n' +
@@ -93,6 +93,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
             type: fileType,
             originalName: file.name,
             size: file.size,
+            mimeType: file.type,
             data: event.target.result,
             uploadedAt: new Date().toISOString()
           };
@@ -106,7 +107,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
       reader.readAsDataURL(file);
     });
 
-    e.target.value = ''; // Reset input
+    e.target.value = '';
   };
 
   // Handle image upload
@@ -146,6 +147,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
             category: imgType,
             originalName: file.name,
             size: file.size,
+            mimeType: file.type,
             data: event.target.result,
             uploadedAt: new Date().toISOString()
           };
@@ -159,7 +161,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
       reader.readAsDataURL(file);
     });
 
-    e.target.value = ''; // Reset input
+    e.target.value = '';
   };
 
   // Handle document upload
@@ -183,6 +185,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
             name: customName,
             originalName: file.name,
             size: file.size,
+            mimeType: file.type,
             data: event.target.result,
             uploadedAt: new Date().toISOString()
           };
@@ -196,7 +199,7 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
       reader.readAsDataURL(file);
     });
 
-    e.target.value = ''; // Reset input
+    e.target.value = '';
   };
 
   const handleFileRemove = (fileType, index) => {
@@ -210,6 +213,62 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
         ...formData,
         attachments: formData.attachments.filter((_, i) => i !== index)
       });
+    }
+  };
+
+  // Preview file (for images and PDFs)
+  const handlePreviewFile = (file) => {
+    setPreviewFile(file);
+  };
+
+  // Download file
+  const handleDownloadFile = (file) => {
+    const fileName = typeof file === 'string' ? file : file.name;
+    const fileData = file.data;
+    
+    if (!fileData) {
+      alert('File data not available for download');
+      return;
+    }
+
+    // Create download link
+    const link = document.createElement('a');
+    link.href = fileData;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Open file in new tab
+  const handleOpenFile = (file) => {
+    const fileData = file.data;
+    
+    if (!fileData) {
+      alert('File data not available');
+      return;
+    }
+
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>${file.name}</title>
+            <style>
+              body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
+              img { max-width: 100%; max-height: 100vh; object-fit: contain; }
+              iframe { width: 100vw; height: 100vh; border: none; }
+            </style>
+          </head>
+          <body>
+            ${file.mimeType && file.mimeType.startsWith('image/') 
+              ? `<img src="${fileData}" alt="${file.name}" />`
+              : `<iframe src="${fileData}" type="${file.mimeType || 'application/pdf'}"></iframe>`
+            }
+          </body>
+        </html>
+      `);
     }
   };
 
@@ -263,6 +322,18 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const isImage = (file) => {
+    if (file.mimeType) return file.mimeType.startsWith('image/');
+    const ext = file.name.split('.').pop().toLowerCase();
+    return ['png', 'jpg', 'jpeg', 'gif', 'svg'].includes(ext);
+  };
+
+  const isPDF = (file) => {
+    if (file.mimeType) return file.mimeType === 'application/pdf';
+    const ext = file.name.split('.').pop().toLowerCase();
+    return ext === 'pdf';
   };
 
   return (
@@ -474,12 +545,42 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
                           </div>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleFileRemove('evidence', index)}
-                        className="p-2 hover:bg-red-100 rounded transition-colors ml-2"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </button>
+                      <div className="flex items-center gap-1 ml-2">
+                        {file.data && (isImage(file) || isPDF(file)) && (
+                          <button
+                            onClick={() => handlePreviewFile(file)}
+                            className="p-2 hover:bg-blue-100 rounded transition-colors"
+                            title="Preview"
+                          >
+                            <Eye className="w-4 h-4 text-blue-600" />
+                          </button>
+                        )}
+                        {file.data && (
+                          <>
+                            <button
+                              onClick={() => handleOpenFile(file)}
+                              className="p-2 hover:bg-green-100 rounded transition-colors"
+                              title="Open in new tab"
+                            >
+                              <ExternalLink className="w-4 h-4 text-green-600" />
+                            </button>
+                            <button
+                              onClick={() => handleDownloadFile(file)}
+                              className="p-2 hover:bg-purple-100 rounded transition-colors"
+                              title="Download"
+                            >
+                              <Download className="w-4 h-4 text-purple-600" />
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => handleFileRemove('evidence', index)}
+                          className="p-2 hover:bg-red-100 rounded transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -565,12 +666,42 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleFileRemove('attachment', index)}
-                      className="p-2 hover:bg-red-100 rounded transition-colors ml-2"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
+                    <div className="flex items-center gap-1 ml-2">
+                      {att.data && (isImage(att) || isPDF(att)) && (
+                        <button
+                          onClick={() => handlePreviewFile(att)}
+                          className="p-2 hover:bg-blue-100 rounded transition-colors"
+                          title="Preview"
+                        >
+                          <Eye className="w-4 h-4 text-blue-600" />
+                        </button>
+                      )}
+                      {att.data && (
+                        <>
+                          <button
+                            onClick={() => handleOpenFile(att)}
+                            className="p-2 hover:bg-green-100 rounded transition-colors"
+                            title="Open in new tab"
+                          >
+                            <ExternalLink className="w-4 h-4 text-green-600" />
+                          </button>
+                          <button
+                            onClick={() => handleDownloadFile(att)}
+                            className="p-2 hover:bg-purple-100 rounded transition-colors"
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4 text-purple-600" />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={() => handleFileRemove('attachment', index)}
+                        className="p-2 hover:bg-red-100 rounded transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -632,6 +763,75 @@ export default function BarrierPanel({ barrier, onUpdate, onClose }) {
           </button>
         </div>
       </div>
+
+      {/* File Preview Modal */}
+      {previewFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-slate-800 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {getFileIcon(previewFile.name)}
+                <div>
+                  <h3 className="font-semibold">{previewFile.name}</h3>
+                  <p className="text-xs text-slate-300">
+                    {previewFile.size && formatFileSize(previewFile.size)} • {new Date(previewFile.uploadedAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDownloadFile(previewFile)}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  title="Download"
+                >
+                  <Download className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleOpenFile(previewFile)}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  title="Open in new tab"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setPreviewFile(null)}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-auto bg-slate-100 p-4 flex items-center justify-center">
+              {isImage(previewFile) ? (
+                <img 
+                  src={previewFile.data} 
+                  alt={previewFile.name}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                />
+              ) : isPDF(previewFile) ? (
+                <iframe
+                  src={previewFile.data}
+                  className="w-full h-full min-h-[600px] rounded-lg shadow-lg bg-white"
+                  title={previewFile.name}
+                />
+              ) : (
+                <div className="text-center p-8">
+                  <File className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                  <p className="text-slate-600 mb-4">Preview not available for this file type</p>
+                  <button
+                    onClick={() => handleDownloadFile(previewFile)}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download File
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
