@@ -45,9 +45,9 @@ function ThreatEditor({ project, onUpdate }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-slate-800">Threats & Preventive Barriers</h3>
-        <button onClick={addThreat} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        <button onClick={addThreat} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
           <Plus className="w-4 h-4" />
           Add Threat
         </button>
@@ -60,12 +60,12 @@ function ThreatEditor({ project, onUpdate }) {
       )}
 
       {project.threats.map((threat, idx) => (
-        <div key={threat.id} className="border-2 border-red-200 rounded-xl p-3 sm:p-5 bg-gradient-to-br from-red-50 to-orange-50">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
+        <div key={threat.id} className="border-2 border-red-200 rounded-xl p-5 bg-gradient-to-br from-red-50 to-orange-50">
+          <div className="flex gap-4 mb-4">
             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">
               {idx + 1}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1">
               <textarea
                 value={threat.threat}
                 onChange={(e) => updateThreat(threat.id, { threat: e.target.value })}
@@ -74,27 +74,25 @@ function ThreatEditor({ project, onUpdate }) {
                 rows={2}
               />
             </div>
-            <div className="flex gap-2 sm:flex-col sm:gap-0">
-              <select
-                value={threat.likelihood}
-                onChange={(e) => updateThreat(threat.id, { likelihood: e.target.value })}
-                className="flex-1 sm:flex-none px-3 py-2 border border-slate-300 rounded-lg text-sm"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-              <button onClick={() => deleteThreat(threat.id)} className="p-2 hover:bg-red-200 rounded-lg">
-                <Trash2 className="w-5 h-5 text-red-600" />
-              </button>
-            </div>
+            <select
+              value={threat.likelihood}
+              onChange={(e) => updateThreat(threat.id, { likelihood: e.target.value })}
+              className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            <button onClick={() => deleteThreat(threat.id)} className="p-2 hover:bg-red-200 rounded-lg">
+              <Trash2 className="w-5 h-5 text-red-600" />
+            </button>
           </div>
 
-          <div className="sm:ml-14 space-y-3">
+          <div className="ml-14 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-blue-900">Preventive Barriers</p>
               <button onClick={() => addBarrierToThreat(threat.id)} className="text-sm px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                + Add
+                + Add Barrier
               </button>
             </div>
 
@@ -104,12 +102,12 @@ function ThreatEditor({ project, onUpdate }) {
                 className="bg-white border-2 border-blue-200 rounded-lg p-3 hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => setSelectedBarrier({ ...barrier, threatId: threat.id, type: 'threat' })}
               >
-                <div className="flex items-start sm:items-center gap-3 flex-wrap">
-                  <div className={`w-3 h-3 rounded-full ${getEffectivenessColor(barrier.effectiveness)} flex-shrink-0 mt-1 sm:mt-0`} title={barrier.effectiveness} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 break-words">{barrier.description || 'Click to configure barrier'}</p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${getEffectivenessColor(barrier.effectiveness)}`} title={barrier.effectiveness} />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-800">{barrier.description || 'Click to configure barrier'}</p>
                     {barrier.attachments && barrier.attachments.length > 0 && (
-                      <div className="flex gap-1 mt-1 flex-wrap">
+                      <div className="flex gap-1 mt-1">
                         {barrier.attachments.map((att, i) => (
                           <span key={i} className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
                             {att.type.toUpperCase()}
@@ -118,28 +116,26 @@ function ThreatEditor({ project, onUpdate }) {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {barrier.owner && (
-                      <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold" title={barrier.owner}>
-                        {getInitials(barrier.owner)}
-                      </div>
-                    )}
-                    {barrier.nextDue && (
-                      <div className="text-xs text-slate-600 flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        <span className="hidden sm:inline">{new Date(barrier.nextDue).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteBarrierFromThreat(threat.id, barrier.id);
-                      }}
-                      className="p-1 hover:bg-red-100 rounded"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
-                  </div>
+                  {barrier.owner && (
+                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold" title={barrier.owner}>
+                      {getInitials(barrier.owner)}
+                    </div>
+                  )}
+                  {barrier.nextDue && (
+                    <div className="text-xs text-slate-600 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(barrier.nextDue).toLocaleDateString()}
+                    </div>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteBarrierFromThreat(threat.id, barrier.id);
+                    }}
+                    className="p-1 hover:bg-red-100 rounded"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-600" />
+                  </button>
                 </div>
               </div>
             ))}
@@ -196,9 +192,9 @@ function ConsequenceEditor({ project, onUpdate }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-slate-800">Consequences & Mitigation Barriers</h3>
-        <button onClick={addConsequence} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+        <button onClick={addConsequence} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
           <Plus className="w-4 h-4" />
           Add Consequence
         </button>
@@ -211,12 +207,12 @@ function ConsequenceEditor({ project, onUpdate }) {
       )}
 
       {project.consequences.map((cons, idx) => (
-        <div key={cons.id} className="border-2 border-orange-200 rounded-xl p-3 sm:p-5 bg-gradient-to-br from-orange-50 to-yellow-50">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
+        <div key={cons.id} className="border-2 border-orange-200 rounded-xl p-5 bg-gradient-to-br from-orange-50 to-yellow-50">
+          <div className="flex gap-4 mb-4">
             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold">
               {idx + 1}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1">
               <textarea
                 value={cons.consequence}
                 onChange={(e) => updateConsequence(cons.id, { consequence: e.target.value })}
@@ -225,27 +221,25 @@ function ConsequenceEditor({ project, onUpdate }) {
                 rows={2}
               />
             </div>
-            <div className="flex gap-2 sm:flex-col sm:gap-0">
-              <select
-                value={cons.severity}
-                onChange={(e) => updateConsequence(cons.id, { severity: e.target.value })}
-                className="flex-1 sm:flex-none px-3 py-2 border border-slate-300 rounded-lg text-sm"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-              <button onClick={() => deleteConsequence(cons.id)} className="p-2 hover:bg-red-200 rounded-lg">
-                <Trash2 className="w-5 h-5 text-red-600" />
-              </button>
-            </div>
+            <select
+              value={cons.severity}
+              onChange={(e) => updateConsequence(cons.id, { severity: e.target.value })}
+              className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            <button onClick={() => deleteConsequence(cons.id)} className="p-2 hover:bg-red-200 rounded-lg">
+              <Trash2 className="w-5 h-5 text-red-600" />
+            </button>
           </div>
 
-          <div className="sm:ml-14 space-y-3">
+          <div className="ml-14 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-green-900">Mitigation Barriers</p>
               <button onClick={() => addBarrierToConsequence(cons.id)} className="text-sm px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                + Add
+                + Add Barrier
               </button>
             </div>
 
@@ -255,12 +249,12 @@ function ConsequenceEditor({ project, onUpdate }) {
                 className="bg-white border-2 border-green-200 rounded-lg p-3 hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => setSelectedBarrier({ ...barrier, consId: cons.id, type: 'consequence' })}
               >
-                <div className="flex items-start sm:items-center gap-3 flex-wrap">
-                  <div className={`w-3 h-3 rounded-full ${getEffectivenessColor(barrier.effectiveness)} flex-shrink-0 mt-1 sm:mt-0`} title={barrier.effectiveness} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 break-words">{barrier.description || 'Click to configure barrier'}</p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${getEffectivenessColor(barrier.effectiveness)}`} title={barrier.effectiveness} />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-slate-800">{barrier.description || 'Click to configure barrier'}</p>
                     {barrier.attachments && barrier.attachments.length > 0 && (
-                      <div className="flex gap-1 mt-1 flex-wrap">
+                      <div className="flex gap-1 mt-1">
                         {barrier.attachments.map((att, i) => (
                           <span key={i} className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
                             {att.type.toUpperCase()}
@@ -269,28 +263,26 @@ function ConsequenceEditor({ project, onUpdate }) {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {barrier.owner && (
-                      <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-bold" title={barrier.owner}>
-                        {getInitials(barrier.owner)}
-                      </div>
-                    )}
-                    {barrier.nextDue && (
-                      <div className="text-xs text-slate-600 flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        <span className="hidden sm:inline">{new Date(barrier.nextDue).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteBarrierFromConsequence(cons.id, barrier.id);
-                      }}
-                      className="p-1 hover:bg-red-100 rounded"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
-                  </div>
+                  {barrier.owner && (
+                    <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-bold" title={barrier.owner}>
+                      {getInitials(barrier.owner)}
+                    </div>
+                  )}
+                  {barrier.nextDue && (
+                    <div className="text-xs text-slate-600 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(barrier.nextDue).toLocaleDateString()}
+                    </div>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteBarrierFromConsequence(cons.id, barrier.id);
+                    }}
+                    className="p-1 hover:bg-red-100 rounded"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-600" />
+                  </button>
                 </div>
               </div>
             ))}
@@ -316,6 +308,7 @@ function ConsequenceEditor({ project, onUpdate }) {
 function ProjectEditor({ project, onUpdate, onBack, onImportToProject }) {
   const [activeTab, setActiveTab] = useState('setup');
 
+  // Ensure project has all required fields
   const safeProject = {
     ...project,
     inherentRisk: project.inherentRisk || { likelihood: 3, severity: 3 },
@@ -332,33 +325,31 @@ function ProjectEditor({ project, onUpdate, onBack, onImportToProject }) {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-lg flex-shrink-0">
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-lg">
+              <X className="w-6 h-6" />
             </button>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-3xl font-bold text-slate-800 truncate">{safeProject.name}</h1>
-              <p className="text-slate-600 text-xs sm:text-sm mt-1 sm:mt-2">Last updated: {new Date(safeProject.updatedAt).toLocaleString()}</p>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800">{safeProject.name}</h1>
+              <p className="text-slate-600 text-sm mt-2">Last updated: {new Date(safeProject.updatedAt).toLocaleString()}</p>
             </div>
           </div>
-          <div className="w-full sm:w-auto">
-            <Toolbar 
-              project={safeProject}
-              onImport={handleImport}
-            />
-          </div>
+          <Toolbar 
+            project={safeProject}
+            onImport={handleImport}
+          />
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto no-print pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex gap-2 no-print">
         {['setup', 'threats', 'consequences', 'risk', 'visual'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold transition-all whitespace-nowrap flex-shrink-0 ${
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
               activeTab === tab 
                 ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg' 
                 : 'bg-white text-slate-700 hover:bg-slate-100'
@@ -370,9 +361,9 @@ function ProjectEditor({ project, onUpdate, onBack, onImportToProject }) {
       </div>
 
       {activeTab === 'setup' && (
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-4 sm:mb-6">Project Setup</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">Project Setup</h2>
+          <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Project Name</label>
               <input
@@ -410,7 +401,7 @@ function ProjectEditor({ project, onUpdate, onBack, onImportToProject }) {
               />
             </div>
           </div>
-          <div className="mt-4 sm:mt-6">
+          <div className="mt-6">
             <label className="block text-sm font-semibold text-slate-700 mb-2">Critical Hazard Event</label>
             <textarea
               value={safeProject.hazardEvent}
@@ -423,23 +414,23 @@ function ProjectEditor({ project, onUpdate, onBack, onImportToProject }) {
       )}
 
       {activeTab === 'threats' && (
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="bg-white rounded-xl shadow-lg p-6">
           <ThreatEditor project={safeProject} onUpdate={onUpdate} />
         </div>
       )}
 
       {activeTab === 'consequences' && (
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="bg-white rounded-xl shadow-lg p-6">
           <ConsequenceEditor project={safeProject} onUpdate={onUpdate} />
         </div>
       )}
 
       {activeTab === 'risk' && (
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-4 sm:mb-6">Risk Assessment Matrix</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">Risk Assessment Matrix</h2>
+          <div className="grid grid-cols-2 gap-6">
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-4">Inherent Risk (No Barriers)</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-4">Inherent Risk (No Barriers)</h3>
               <RiskMatrix project={safeProject} mode="inherent" />
               <div className="mt-4 space-y-3">
                 <div>
@@ -480,7 +471,7 @@ function ProjectEditor({ project, onUpdate, onBack, onImportToProject }) {
             </div>
 
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-4">Residual Risk (With Barriers)</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-4">Residual Risk (With Barriers)</h3>
               <RiskMatrix project={safeProject} mode="residual" />
               <div className="mt-4 space-y-3">
                 <div>
@@ -521,8 +512,8 @@ function ProjectEditor({ project, onUpdate, onBack, onImportToProject }) {
             </div>
           </div>
 
-          <div className="mt-4 sm:mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="font-bold text-blue-900 mb-2 text-sm sm:text-base">Risk Reduction Summary</h4>
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 className="font-bold text-blue-900 mb-2">Risk Reduction Summary</h4>
             <p className="text-sm text-blue-800">
               Your barriers reduce risk from <strong>{safeProject.inherentRisk.likelihood * safeProject.inherentRisk.severity}</strong> (Inherent) 
               to <strong>{safeProject.residualRisk.likelihood * safeProject.residualRisk.severity}</strong> (Residual).
@@ -533,8 +524,8 @@ function ProjectEditor({ project, onUpdate, onBack, onImportToProject }) {
       )}
 
       {activeTab === 'visual' && (
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-4 sm:mb-6 no-print">Bow Tie Visualization</h2>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6 no-print">Bow Tie Visualization</h2>
           <BowTieVisual project={safeProject} />
         </div>
       )}
@@ -565,18 +556,18 @@ function Dashboard({ projects, onSelectProject, onNewProject, onLogout, onImport
       }
     };
     reader.readAsText(file);
-    e.target.value = '';
+    e.target.value = ''; // Reset input
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl shadow-2xl p-8">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2">Bow Tie Safety Platform</h1>
-            <p className="text-blue-100 text-base sm:text-lg">Professional Edition - Enhanced Features</p>
+            <h1 className="text-4xl font-bold text-white mb-2">Bow Tie Safety Platform</h1>
+            <p className="text-blue-100 text-lg">Professional Edition - Enhanced Features</p>
           </div>
-          <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="flex gap-3">
             <input
               ref={fileInputRef}
               type="file"
@@ -584,29 +575,30 @@ function Dashboard({ projects, onSelectProject, onNewProject, onLogout, onImport
               onChange={handleFileChange}
               className="hidden"
             />
-            <button onClick={handleImportClick} className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 flex items-center justify-center gap-2 text-sm sm:text-base">
+            <button onClick={handleImportClick} className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 flex items-center gap-2">
               <FileUp className="w-4 h-4" />
-              <span className="hidden sm:inline">Import</span>
+              Import
             </button>
-            <button onClick={onLogout} className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 text-sm sm:text-base">
+            <button onClick={onLogout} className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30">
               Logout
             </button>
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <button
           onClick={onNewProject}
-          className="h-40 sm:h-48 border-4 border-dashed border-slate-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center justify-center gap-3 text-slate-600 hover:text-blue-600"
+          className="h-48 border-4 border-dashed border-slate-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all flex flex-col items-center justify-center gap-3 text-slate-600 hover:text-blue-600"
         >
-          <Plus className="w-10 h-10 sm:w-12 sm:h-12" />
-          <span className="text-base sm:text-lg font-semibold">New Project</span>
+          <Plus className="w-12 h-12" />
+          <span className="text-lg font-semibold">New Project</span>
         </button>
 
         {projects.map(project => (
           <div
             key={project.id}
-            className="bg-white rounded-xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all cursor-pointer relative group"
+            className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all cursor-pointer relative group"
             onClick={() => onSelectProject(project.id)}
           >
             <button
@@ -616,19 +608,19 @@ function Dashboard({ projects, onSelectProject, onNewProject, onLogout, onImport
                   onDeleteProject(project.id);
                 }
               }}
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 opacity-0 group-hover:opacity-100 hover:bg-red-100 rounded-lg transition-all"
+              className="absolute top-4 right-4 p-2 opacity-0 group-hover:opacity-100 hover:bg-red-100 rounded-lg transition-all"
             >
-              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+              <Trash2 className="w-5 h-5 text-red-600" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600 flex-shrink-0" />
-              <h3 className="text-lg sm:text-xl font-bold text-slate-800 break-words">{project.name}</h3>
+              <AlertTriangle className="w-8 h-8 text-orange-600" />
+              <h3 className="text-xl font-bold text-slate-800">{project.name}</h3>
             </div>
             <p className="text-slate-600 text-sm mb-4">{project.department}</p>
-            <div className="flex items-center justify-between text-xs sm:text-sm text-slate-500">
+            <div className="flex items-center justify-between text-sm text-slate-500">
               <span>Updated: {new Date(project.updatedAt).toLocaleDateString()}</span>
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ChevronRight className="w-5 h-5" />
             </div>
           </div>
         ))}
@@ -722,7 +714,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto p-6">
         {selectedProject ? (
           <ProjectEditor
             project={selectedProject}
@@ -744,4 +736,3 @@ export default function App() {
     </div>
   );
 }
-
