@@ -705,6 +705,13 @@ function Dashboard({ projects, onSelectProject, onNewProject, onLogout, onImport
               <FileUp className="w-4 h-4" />
               <span className="hidden sm:inline">Import</span>
             </button>
+            
+<a 
+  href="/comparison"
+  className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm sm:text-base"
+>
+  Platform Comparison
+</a>
             <button onClick={onLogout} className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 text-sm sm:text-base">
               Logout
             </button>

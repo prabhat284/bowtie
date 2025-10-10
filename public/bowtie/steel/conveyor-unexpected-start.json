@@ -1,0 +1,238 @@
+{
+  "id": 30001,
+  "name": "Conveyor Belt – Unexpected Start During Maintenance",
+  "department": "Material Handling / Conveyor Operations",
+  "owner": "Process Safety Team",
+  "reviewDate": "2025-12-31",
+  "status": "active",
+  "createdAt": "2025-10-09T10:00:00Z",
+  "updatedAt": "2025-10-09T10:00:00Z",
+  "riskLevel": "high",
+  "viewMode": "residual",
+  "hazardEvent": "Uncontrolled startup of conveyor belt while personnel working on it",
+  "heroImage": "/bowtie/steel/images/conveyor-maintenance-hero.jpg",
+
+  "threats": [
+    {
+      "id": 30011,
+      "threat": "Work permit not digitally linked to isolation status",
+      "likelihood": "medium",
+      "likelihood_inherent": "high",
+      "barriers": [
+        {
+          "text": "Digital work permit with MCC/PLC cross-check",
+          "owner": "Operations Supervisor",
+          "effectiveness": "weak",
+          "next_due_at": "2025-11-15",
+          "findings_open": 1
+        },
+        {
+          "text": "Permit-to-work briefing & sign-on sheet",
+          "owner": "Area In-charge",
+          "effectiveness": "good",
+          "next_due_at": "2025-10-31",
+          "findings_open": 0
+        }
+      ],
+      "escalationFactors": [
+        "Manual sign-off without PLC handshake",
+        "Shift change communication gap"
+      ]
+    },
+    {
+      "id": 30012,
+      "threat": "LOTO incomplete or bypassed under time pressure",
+      "likelihood": "medium",
+      "likelihood_inherent": "high",
+      "barriers": [
+        {
+          "text": "Smart LOTO device with QR validation",
+          "owner": "Maintenance Team",
+          "effectiveness": "good",
+          "next_due_at": "2025-11-10",
+          "findings_open": 0
+        },
+        {
+          "text": "Visual tagboard at MCC (Lock status indicator)",
+          "owner": "Electrical Maintenance",
+          "effectiveness": "weak",
+          "next_due_at": "2025-11-05",
+          "findings_open": 2
+        }
+      ],
+      "escalationFactors": [
+        "Production restart pressure",
+        "Inadequate supervision during shutdown"
+      ]
+    },
+    {
+      "id": 30013,
+      "threat": "Remote restart command or PLC reset",
+      "likelihood": "low",
+      "likelihood_inherent": "medium",
+      "barriers": [
+        {
+          "text": "Restart interlock inhibited when permit.active = true",
+          "owner": "Automation Engineer",
+          "effectiveness": "weak",
+          "next_due_at": "2025-11-20",
+          "findings_open": 1
+        },
+        {
+          "text": "Control room lock & restart authorization (two-person rule)",
+          "owner": "Control Room Supervisor",
+          "effectiveness": "good",
+          "next_due_at": "2025-10-25",
+          "findings_open": 0
+        }
+      ],
+      "escalationFactors": [
+        "PLC configuration not version-controlled",
+        "Unclear responsibility for restart approval"
+      ]
+    },
+    {
+      "id": 30014,
+      "threat": "Maintenance crew unaware belt energized",
+      "likelihood": "medium",
+      "likelihood_inherent": "high",
+      "barriers": [
+        {
+          "text": "Mobile dashboard displaying isolation & permit status",
+          "owner": "Process Safety",
+          "effectiveness": "weak",
+          "next_due_at": "2025-12-01",
+          "findings_open": 1
+        },
+        {
+          "text": "Audible/visual pre-start warning siren and beacon",
+          "owner": "Electrical Maintenance",
+          "effectiveness": "good",
+          "next_due_at": "2025-11-12",
+          "findings_open": 0
+        }
+      ],
+      "escalationFactors": [
+        "Poor PA coverage / noisy environment",
+        "Outdated contact list for crew leads"
+      ]
+    }
+  ],
+
+  "consequences": [
+    {
+      "id": 30021,
+      "consequence": "Worker injury or fatality due to belt motion",
+      "severity": "high",
+      "severity_inherent": "high",
+      "barriers": [
+        {
+          "text": "Emergency pull chord (E-Stop) – self-test & heartbeat",
+          "owner": "Electrical Maintenance",
+          "effectiveness": "failed",
+          "next_due_at": "2025-10-10",
+          "findings_open": 3
+        },
+        {
+          "text": "Proximity sensors & light curtains at maintenance zones",
+          "owner": "Control Engineer",
+          "effectiveness": "weak",
+          "next_due_at": "2025-11-18",
+          "findings_open": 1
+        }
+      ],
+      "escalationFactors": [
+        "Pull chord circuit degradation",
+        "Sensor misalignment or contamination"
+      ]
+    },
+    {
+      "id": 30022,
+      "consequence": "Mechanical damage to conveyor or belt",
+      "severity": "medium",
+      "severity_inherent": "high",
+      "barriers": [
+        {
+          "text": "Torque/overload trip with event logging",
+          "owner": "Automation Engineer",
+          "effectiveness": "good",
+          "next_due_at": "2025-12-05",
+          "findings_open": 0
+        },
+        {
+          "text": "Vibration monitoring with alert thresholds",
+          "owner": "Reliability Engineer",
+          "effectiveness": "medium",
+          "next_due_at": "2025-11-25",
+          "findings_open": 1
+        }
+      ],
+      "escalationFactors": [
+        "Calibration overdue",
+        "Data not reviewed during maintenance"
+      ]
+    },
+    {
+      "id": 30023,
+      "consequence": "Production downtime and reputational impact",
+      "severity": "medium",
+      "severity_inherent": "medium",
+      "barriers": [
+        {
+          "text": "Incident response SOP & near-miss capture",
+          "owner": "Safety Officer",
+          "effectiveness": "good",
+          "next_due_at": "2025-10-20",
+          "findings_open": 0
+        },
+        {
+          "text": "Management of Change (MOC) for restart logic changes",
+          "owner": "Process Safety Head",
+          "effectiveness": "medium",
+          "next_due_at": "2025-12-20",
+          "findings_open": 1
+        }
+      ],
+      "escalationFactors": [
+        "Delayed RCA and feedback into control logic",
+        "Fragmented ownership across teams"
+      ]
+    }
+  ],
+
+  "digitalSignals": [
+    {
+      "key": "permit.active",
+      "source": "Digital work permit system (SAP / in-house)",
+      "frequency": "realtime",
+      "description": "True if permit open; inhibits restart via PLC interlock"
+    },
+    {
+      "key": "isolation.status",
+      "source": "MCC/PLC feedback",
+      "frequency": "realtime",
+      "description": "Confirms electrical isolation state"
+    },
+    {
+      "key": "pullchord.health",
+      "source": "Pull chord loop test",
+      "frequency": "hourly",
+      "description": "Heartbeat / self-test to verify E-Stop readiness"
+    },
+    {
+      "key": "restart.request",
+      "source": "HMI/SCADA event",
+      "frequency": "on_event",
+      "description": "Triggers cross-check against permit.active & isolation.status"
+    },
+    {
+      "key": "alert.broadcast",
+      "source": "BowTie dashboard / SMS-Email gateway",
+      "frequency": "on_anomaly",
+      "description": "Notifies crew if any barrier is red before restart"
+    }
+  ],
+
+  "notes": "Case built from recent incident insight: belt started during maintenance despite permit and interlocks. Focus is on connecting permit → PLC → barrier health so restart is impossible unless all barriers are green."
+}
+
