@@ -1,11 +1,9 @@
+// vercel.json - CORRECTED VERSION
 {
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "env": {
-    "GROQ_API_KEY": "@groq-api-key"
-  }
+  ]
 }
